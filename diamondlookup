@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diamond Provenance Lookup (DEMO)</title>
+  <style>
+    :root{
+      --bg:#0a0e27;
+      --card:#1a1f3a;
+      --card2:#2d3561;
+      --muted:#b9bfd6;
+      --text:#eef1ff;
+      --accent:#f7931a;
+      --good:#27ae60;
+      --warn:#e74c3c;
+      --line:rgba(255,255,255,0.12);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 20% -10%, #2d3561 0%, var(--bg) 55%);
+      color:var(--text);
+      line-height:1.55;
+      padding:22px;
+    }
+    .wrap{max-width:1100px;margin:0 auto}
+    .top{
+      background:linear-gradient(135deg,#5a6378,#4a5568);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:22px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.25);
+    }
+    .top h1{font-size:28px;margin-bottom:6px}
+    .pill{
+      display:inline-block;
+      background:rgba(0,0,0,0.35);
+      border:1px solid rgba(255,255,255,0.18);
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:700;
+      color:#fff;
+      margin-top:10px;
+      font-size:13px;
+    }
+    .pill b{color:var(--accent)}
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap:16px;
+      margin-top:16px;
+    }
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+    }
+    .card h2{font-size:18px;margin-bottom:10px;color:#fff}
+    .muted{color:var(--muted)}
+    .row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .kv{
+      flex:1 1 220px;
+      background:rgba(255,255,255,0.04);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+    }
+    .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .v{font-size:16px;font-weight:800;margin-top:4px}
+    .badge{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:800;
+      font-size:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.05);
+    }
+    .badge.good{border-color:rgba(39,174,96,0.45); color:#d9ffe8}
+    .badge.warn{border-color:rgba(231,76,60,0.45); color:#ffe3df}
+    .badge.accent{border-color:rgba(247,147,26,0.55); color:#fff3df}
+    .timeline{
+      margin-top:12px;
+      border-left:3px solid rgba(247,147,26,0.55);
+      padding-left:14px;
+    }
+    .step{
+      padding:12px 12px 12px 0;
+      border-bottom:1px dashed rgba(255,255,255,0.16);
+    }
+    .step:last-child{border-bottom:none}
+    .step .t{font-weight:900}
+    .step .s{color:var(--muted);font-size:13px;margin-top:4px}
+    .search{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+      flex-wrap:wrap;
+    }
+    input{
+      flex:1 1 300px;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.22);
+      background:rgba(0,0,0,0.20);
+      color:#fff;
+      font-size:16px;
+      outline:none;
+    }
+    button{
+      padding:12px 16px;
+      border-radius:12px;
+      border:none;
+      background:var(--accent);
+      font-weight:900;
+      cursor:pointer;
+      color:#1a1f3a;
+    }
+    button:hover{filter:brightness(1.07)}
+    .note{
+      margin-top:10px;
+      font-size:13px;
+      color:#d7dbf2;
+      opacity:0.9;
+    }
+    .rightBox{
+      background:linear-gradient(135deg,var(--card2),var(--card));
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      min-height:100%;
+    }
+    .qr{
+      width:170px;height:170px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.16);
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(255,255,255,0.08),
+        rgba(255,255,255,0.08) 10px,
+        rgba(255,255,255,0.02) 10px,
+        rgba(255,255,255,0.02) 20px
+      );
+      display:flex;align-items:center;justify-content:center;
+      margin:10px 0 14px 0;
+      color:#fff;
+      font-weight:900;
+    }
+    .small{font-size:12px;color:var(--muted)}
+    .footer{
+      margin-top:14px;
+      font-size:12px;
+      color:#c8cde6;
+      opacity:0.9;
+      border-top:1px solid rgba(255,255,255,0.12);
+      padding-top:12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <h1>Diamond Provenance Lookup</h1>
+      <div class="muted">A classroom <b>mock</b> “tracking” page showing what a provenance report can look like.</div>
+      <div class="pill"><b>DEMO ONLY</b> — this is not a real Tracr / retail lookup</div>
+
+      <div class="search">
+        <input id="lookup" value="DEMO-DIAMOND-2026-0001" aria-label="Lookup ID" />
+        <button onclick="runLookup()">LOOK UP</button>
+      </div>
+      <div class="note">Tip: Change the ID to anything and click LOOK UP — it will still load the demo record.</div>
+    </div>
+
+    <div class="grid">
+      <div class="card" id="report">
+        <h2>Provenance Report</h2>
+
+        <div class="row">
+          <div class="kv">
+            <div class="k">Tracking ID</div>
+            <div class="v" id="idVal">DEMO-DIAMOND-2026-0001</div>
+          </div>
+          <div class="kv">
+            <div class="k">Status</div>
+            <div class="v"><span class="badge good">Traceable chain recorded</span></div>
+          </div>
+          <div class="kv">
+            <div class="k">Network Type</div>
+            <div class="v"><span class="badge accent">Permissioned ledger (industry)</span></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="kv">
+            <div class="k">Stone</div>
+            <div class="v">Round Brilliant</div>
+          </div>
+          <div class="kv">
+            <div class="k">Carat</div>
+            <div class="v">1.02 ct</div>
+          </div>
+          <div class="kv">
+            <div class="k">Colour / Clarity</div>
+            <div class="v">G / VS1</div>
+          </div>
+          <div class="kv">
+            <div class="k">Cut Grade</div>
+            <div class="v">Excellent</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="kv">
+            <div class="k">Ethics flags</div>
+            <div class="v"><span class="badge good">No conflict flags recorded</span></div>
+          </div>
+          <div class="kv">
+            <div class="k">Data caveat</div>
+            <div class="v"><span class="badge warn">“Garbage in, garbage out” risk</span></div>
+          </div>
+        </div>
+
+        <h2 style="margin-top:16px;">Chain of custody</h2>
+        <div class="timeline">
+          <div class="step">
+            <div class="t">Origin: Orapa Region, Botswana</div>
+            <div class="s">Recorded at source (rough stone registration) • 2022-11-02</div>
+          </div>
+          <div class="step">
+            <div class="t">Sorting & Valuation: Gaborone, Botswana</div>
+            <div class="s">Batch split + stone fingerprint scan • 2022-11-08</div>
+          </div>
+          <div class="step">
+            <div class="t">Cutting & Polishing: Surat, India</div>
+            <div class="s">Re-scan at handover; transformation recorded • 2022-12-01</div>
+          </div>
+          <div class="step">
+            <div class="t">Certification: Independent Lab</div>
+            <div class="s">Certificate reference linked • 2022-12-12</div>
+          </div>
+          <div class="step">
+            <div class="t">Retail: London, UK</div>
+            <div class="s">Final handover to retailer; customer-facing summary generated • 2023-01-10</div>
+          </div>
+        </div>
+
+        <div class="footer">
+          Classroom prompt: Which steps are verifiable? Which steps rely on trust in the uploader? Who controls access to the ledger?
+        </div>
+      </div>
+
+      <div class="rightBox">
+        <h2>Customer View</h2>
+        <div class="small">Scan-style display (mock)</div>
+        <div class="qr">QR</div>
+        <div class="row">
+          <div class="kv" style="flex:1 1 100%;">
+            <div class="k">What this demo teaches</div>
+            <div class="v" style="font-size:15px; font-weight:700;">
+              A ledger can preserve records, but it can’t guarantee the first record is true. Verification still matters.
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="kv" style="flex:1 1 100%;">
+            <div class="k">In-class activity (2 minutes)</div>
+            <div class="v" style="font-size:15px; font-weight:700;">
+              List 2 benefits and 2 limitations of “blockchain provenance” for ethics.
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="kv" style="flex:1 1 100%;">
+            <div class="k">Suggested question</div>
+            <div class="v" style="font-size:15px; font-weight:700;">
+              If a miner lies at the start, what does the blockchain actually protect?
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          Want a real QR? Use any free QR generator to encode your class demo URL.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function runLookup(){
+      const val = document.getElementById('lookup').value || 'DEMO-DIAMOND-2026-0001';
+      document.getElementById('idVal').textContent = val.trim();
+      document.getElementById('report').scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  </script>
+</body>
+</html>
