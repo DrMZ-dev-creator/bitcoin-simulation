@@ -1,0 +1,616 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Trading Simulation - November 2021</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e27;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #4a5568;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            color: #fff;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .date-banner {
+            background: #f7931a;
+            color: white;
+            padding: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .price-widget {
+            background: linear-gradient(135deg, #2d3561, #1a1f3a);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #27ae60;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .btc-price {
+            font-size: 3.5em;
+            color: #27ae60;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .price-change {
+            font-size: 1.5em;
+            color: #27ae60;
+            margin-bottom: 20px;
+        }
+
+        .fear-greed {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #27ae60;
+        }
+
+        .fear-greed h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .fear-index {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .news-card {
+            background: #1a1f3a;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #27ae60;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(39, 174, 96, 0.3);
+        }
+
+        .news-source {
+            color: #27ae60;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .news-date {
+            color: #888;
+            font-size: 0.85em;
+            margin-bottom: 10px;
+        }
+
+        .news-headline {
+            font-size: 1.2em;
+            color: #fff;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .news-excerpt {
+            color: #ccc;
+            font-size: 0.95em;
+        }
+
+        .social-feed {
+            background: #1a1f3a;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .social-feed h2 {
+            color: #1da1f2;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .tweet {
+            background: #2d3561;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 3px solid #1da1f2;
+        }
+
+        .tweet-author {
+            color: #1da1f2;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .tweet-date {
+            color: #888;
+            font-size: 0.85em;
+            margin-bottom: 10px;
+        }
+
+        .tweet-content {
+            color: #e0e0e0;
+            line-height: 1.5;
+        }
+
+        .trading-decision {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border: 3px solid #f39c12;
+        }
+
+        .trading-decision h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .decision-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .decision-option {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .decision-option h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .decision-option input, .decision-option select, .decision-option textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+        }
+
+        .submit-btn {
+            background: #f7931a;
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: #ff9f2e;
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(247, 147, 26, 0.5);
+        }
+
+        .password-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .password-input {
+            padding: 15px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            border: 2px solid #4a5568;
+            margin-right: 10px;
+            background: #2d3561;
+            color: white;
+        }
+
+        .reveal-btn {
+            background: #e74c3c;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reveal-btn:hover {
+            background: #c0392b;
+        }
+
+        .indicator-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .indicator-card {
+            background: #2d3561;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .indicator-label {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .indicator-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Bitcoin Trading Simulation</h1>
+        <div class="date-banner">📅 DATE TO BE REVEALED - ALL-TIME HIGH TERRITORY!</div>
+    </div>
+
+    <div class="container">
+        <!-- Price Dashboard -->
+        <div class="dashboard">
+            <div class="price-widget">
+                <div style="font-size: 1.2em; color: #888; margin-bottom: 10px;">BITCOIN PRICE (BTC/USD)</div>
+                <div class="btc-price">$67,500</div>
+                <div class="price-change">▲ +8.3% (24h) | ▲ +42.5% (30d)</div>
+                <div style="margin-top: 20px; color: #ccc;">
+                    <p><strong>24h High:</strong> $68,200 | <strong>24h Low:</strong> $65,800</p>
+                    <p><strong>Previous ATH:</strong> $64,829 (Earlier this year)</p>
+                    <p><strong>Above Previous ATH:</strong> +4.1%</p>
+                </div>
+
+                <div class="indicator-grid" style="margin-top: 20px;">
+                    <div class="indicator-card">
+                        <div class="indicator-label">RSI (14)</div>
+                        <div class="indicator-value" style="color: #f39c12;">78.5</div>
+                    </div>
+                    <div class="indicator-card">
+                        <div class="indicator-label">50-Day MA</div>
+                        <div class="indicator-value">$60,200</div>
+                    </div>
+                    <div class="indicator-card">
+                        <div class="indicator-label">200-Day MA</div>
+                        <div class="indicator-value">$48,300</div>
+                    </div>
+                    <div class="indicator-card">
+                        <div class="indicator-label">24h Volume</div>
+                        <div class="indicator-value">$62.8B</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fear-greed">
+                <h3>🤑 FEAR & GREED INDEX</h3>
+                <div class="fear-index">84</div>
+                <div style="font-size: 1.8em; font-weight: bold;">EXTREME GREED</div>
+                <div style="margin-top: 15px; font-size: 0.95em;">
+                    <p>Up from 72 last week</p>
+                    <p>Euphoria everywhere!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- News Section -->
+        <div style="margin: 30px 0;">
+            <h2 style="font-size: 2em; color: #27ae60; margin-bottom: 20px;">📰 Breaking News & Market Analysis</h2>
+        </div>
+
+        <div class="news-grid">
+            <div class="news-card">
+                <div class="news-source">🚀 CNBC</div>
+                <div class="news-date">This morning</div>
+                <div class="news-headline">Bitcoin Smashes Through Previous ATH, Eyes $70,000</div>
+                <div class="news-excerpt">Bitcoin breaks April's all-time high of $64,829, now trading above $67,000. Analysts predicting $70K+ by month's end. Institutional buying at record levels. Is $100K next?</div>
+            </div>
+
+            <div class="news-card">
+                <div class="news-source">📊 Bloomberg</div>
+                <div class="news-date">Yesterday</div>
+                <div class="news-headline">First Bitcoin Futures ETF Sees Massive Inflows</div>
+                <div class="news-excerpt">ProShares Bitcoin Strategy ETF (BITO) launched last month, now managing over $1.4B in assets. Wall Street's appetite for crypto exposure insatiable. More ETFs pending SEC approval.</div>
+            </div>
+
+            <div class="news-card">
+                <div class="news-source">💰 CoinDesk</div>
+                <div class="news-date">This week</div>
+                <div class="news-headline">Bitcoin Taproot Upgrade Successfully Activates</div>
+                <div class="news-excerpt">Bitcoin's most significant upgrade in 4 years goes live. Enhanced privacy, smart contract capabilities unlocked. Bulls see this as catalyst for institutional adoption and DeFi growth.</div>
+            </div>
+
+            <div class="news-card">
+                <div class="news-source">🏛️ Reuters</div>
+                <div class="news-date">This week</div>
+                <div class="news-headline">El Salvador's Bitcoin Experiment Shows Early Success</div>
+                <div class="news-excerpt">Three months after making BTC legal tender, El Salvador reports positive adoption metrics. Other nations watching closely. President Bukele hints at "Bitcoin City" plans.</div>
+            </div>
+
+            <div class="news-card">
+                <div class="news-source">📈 Glassnode</div>
+                <div class="news-date">Today</div>
+                <div class="news-headline">Exchange Reserves Hit Multi-Year Lows</div>
+                <div class="news-excerpt">Bitcoin leaving exchanges at fastest rate since 2020. Supply shock imminent? Only 13% of BTC supply on exchanges. Whales accumulating aggressively. "Not your keys, not your coins" mantra resonating.</div>
+            </div>
+
+            <div class="news-card">
+                <div class="news-source">⚡ CryptoQuant</div>
+                <div class="news-date">This morning</div>
+                <div class="news-headline">Institutional Holdings Surge to New Record</div>
+                <div class="news-excerpt">Public companies now hold over 200,000 BTC worth $13B+. MicroStrategy leads with 114K BTC. Tesla, Square, Marathon Digital adding. Traditional finance can't ignore Bitcoin anymore.</div>
+            </div>
+        </div>
+
+        <!-- Social Media Feed -->
+        <div class="social-feed">
+            <h2>🐦 Twitter Sentiment - Crypto Community</h2>
+            
+            <div class="tweet">
+                <div class="tweet-author">@100trillionUSD (PlanB) • S2F Model Creator</div>
+                <div class="tweet-date">This morning</div>
+                <div class="tweet-content">We're RIGHT ON TRACK. Stock-to-Flow model predicted $100K-$288K for this cycle. We're at $67K with the best part of the bull run still ahead. December/January will be WILD. 📈</div>
+            </div>
+
+            <div class="tweet">
+                <div class="tweet-author">@APompliano (Pomp) • Crypto Analyst</div>
+                <div class="tweet-date">Yesterday</div>
+                <div class="tweet-content">New ATH! Bitcoin proving once again that patience pays off. Those who sold in May at $30K are punching air right now. Next stop: $100,000. The best is yet to come. 🚀</div>
+            </div>
+
+            <div class="tweet">
+                <div class="tweet-author">@CathieDWood • ARK Invest CEO</div>
+                <div class="tweet-date">This week</div>
+                <div class="tweet-content">Our conviction: Bitcoin to $500,000 by 2026. Institutional adoption accelerating. Taproot upgrade unlocking smart contract potential. Best risk-reward asset in our portfolios. Not selling a satoshi.</div>
+            </div>
+
+            <div class="tweet">
+                <div class="tweet-author">@DocumentingBTC</div>
+                <div class="tweet-date">2 hours ago</div>
+                <div class="tweet-content">BREAKING: Bitcoin just hit $68,000 on some exchanges! New all-time high! This bull run is just getting started. Buckle up! 🎢</div>
+            </div>
+
+            <div class="tweet">
+                <div class="tweet-author">@Saylor • MicroStrategy CEO</div>
+                <div class="tweet-date">Today</div>
+                <div class="tweet-content">We're buying more. Bitcoin is the apex property of the human race. The best performing asset of the decade, and we're just getting started. $100K is inevitable. Then $1M.</div>
+            </div>
+
+            <div class="tweet">
+                <div class="tweet-author">@CryptoCobain • Trader</div>
+                <div class="tweet-date">This morning</div>
+                <div class="tweet-content">RSI at 78. Extreme greed at 84. Everyone bullish. This is usually when you should be cautious... but momentum is insane. Riding this wave but keeping stops tight. FOMO is real.</div>
+            </div>
+        </div>
+
+        <!-- Analyst Predictions -->
+        <div style="background: #1a1f3a; padding: 30px; border-radius: 15px; margin: 20px 0;">
+            <h2 style="color: #27ae60; margin-bottom: 20px;">📊 Analyst Predictions & Commentary</h2>
+            
+            <div style="border-left: 4px solid #27ae60; padding: 15px; margin: 15px 0; background: #2d3561;">
+                <strong style="color: #27ae60;">Plan B (S2F Model Creator):</strong>
+                <p style="margin-top: 10px;">"Stock-to-Flow model is on track. We're exactly where we should be. $100K by year-end is conservative. Peak cycle target: $288K. This model hasn't failed yet."</p>
+            </div>
+
+            <div style="border-left: 4px solid #27ae60; padding: 15px; margin: 15px 0; background: #2d3561;">
+                <strong style="color: #27ae60;">Cathie Wood (ARK Invest):</strong>
+                <p style="margin-top: 10px;">"$500,000 per Bitcoin by 2026. Institutional allocation moving from 0% to just 5% would add $500B in demand. This is the biggest wealth transfer opportunity of our lifetimes."</p>
+            </div>
+
+            <div style="border-left: 4px solid #f39c12; padding: 15px; margin: 15px 0; background: #2d3561;">
+                <strong style="color: #f39c12;">Tom Lee (Fundstrat):</strong>
+                <p style="margin-top: 10px;">"$100K by end of Q1 2022. Maybe $150K. History shows Bitcoin typically doesn't peak until 12-18 months after halving. We're only 18 months in. Plenty of room to run."</p>
+            </div>
+
+            <div style="border-left: 4px solid #e74c3c; padding: 15px; margin: 15px 0; background: #2d3561;">
+                <strong style="color: #e74c3c;">Peter Schiff (Gold Bug / Bitcoin Skeptic):</strong>
+                <p style="margin-top: 10px;">"This is the top. Euphoria is off the charts. RSI overbought. Fed about to tighten. When liquidity dries up, Bitcoin will collapse back to $20K. Gold is the real store of value."</p>
+            </div>
+        </div>
+
+        <!-- Trading Decision Section -->
+        <div class="trading-decision">
+            <h2>💰 YOUR TRADING DECISION</h2>
+            <p style="text-align: center; font-size: 1.2em; margin-bottom: 20px;">
+                At new all-time highs with extreme euphoria - what would YOU do?
+            </p>
+
+            <div class="decision-grid">
+                <div class="decision-option">
+                    <h3>📊 Position Details</h3>
+                    <label>Position Type:</label>
+                    <select id="positionType">
+                        <option value="">Select...</option>
+                        <option value="long">LONG (Buy/Hold)</option>
+                        <option value="short">SHORT (Sell)</option>
+                        <option value="take_profit">TAKE PROFIT (Sell Some)</option>
+                    </select>
+
+                    <label>Current Price ($):</label>
+                    <input type="number" id="entryPrice" placeholder="e.g., 67500" value="67500">
+
+                    <label>Position Size ($):</label>
+                    <input type="number" id="positionSize" placeholder="e.g., 10000">
+
+                    <label>Target/Stop ($):</label>
+                    <input type="number" id="targetPrice" placeholder="e.g., 100000 or 60000">
+                </div>
+
+                <div class="decision-option">
+                    <h3>📝 Your Reasoning</h3>
+                    <label>Why are you making this decision?</label>
+                    <textarea id="reasoning" style="height: 190px;">Explain your rationale...</textarea>
+                </div>
+            </div>
+
+            <button class="submit-btn" onclick="submitDecision()">📋 SUBMIT DECISION (GENERATE SUMMARY)</button>
+
+            <!-- Submission result (students screenshot this) -->
+            <div id="submissionResult" style="display:none; margin-top: 20px; background: rgba(0,0,0,0.18); border: 2px solid rgba(255,255,255,0.35); padding: 18px; border-radius: 12px;">
+                <h3 style="margin-bottom: 10px;">✅ Submission Summary (Screenshot this)</h3>
+                <div id="submissionSummary" style="white-space: pre-wrap; line-height: 1.5;"></div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+                    <button type="button" class="reveal-btn" style="background:#1da1f2;" onclick="copySummary()">COPY SUMMARY</button>
+                    <button type="button" class="reveal-btn" style="background:#4a5568;" onclick="downloadReceipt()">DOWNLOAD RECEIPT (.txt)</button>
+                </div>
+                <p style="margin-top:12px; color:#f0f0f0; font-size:0.95em;">
+                    Upload the screenshot (or the downloaded receipt) to Blackboard.
+                </p>
+            </div>
+        </div>
+
+        <!-- Password Protected Reveal Section -->
+        <!-- Reveal section (class-controlled) -->
+        <div class="password-section">
+            <h2 style="color: #e74c3c; margin-bottom: 20px;">🔐 REVEAL</h2>
+            <p style="margin-bottom: 10px; font-size: 1.1em;">Your instructor will share the reveal link during the debrief.</p>
+            <p style="color:#ccc;">(We don’t use an on-page password because it’s easy to find in page source.)</p>
+        </div>
+    </div>
+
+    <script>
+  function submitDecision() {
+    const positionType = document.getElementById('positionType')?.value || '';
+    const entryPrice = document.getElementById('entryPrice')?.value || '';
+    const positionSize = document.getElementById('positionSize')?.value || '';
+    const reasoning = document.getElementById('reasoning')?.value || '';
+    const targetPrice = document.getElementById('targetPrice')?.value || '';
+
+    if (!positionType || !entryPrice || !positionSize || !reasoning) {
+      alert('Please fill in all required fields!');
+      return;
+    }
+
+    const decision = {
+      positionType,
+      entryPrice,
+      positionSize,
+      targetPrice,
+      reasoning,
+      timestamp: new Date().toISOString()
+    };
+
+    localStorage.setItem('nov2021_decision', JSON.stringify(decision));
+
+    const summaryLines = [
+      'Bitcoin Trading Simulation — November 2021',
+      '-----------------------------------------',
+      `Position: ${String(positionType).toUpperCase()}`,
+      `Entry price: $${Number(entryPrice).toLocaleString()}`,
+      `Position size: $${Number(positionSize).toLocaleString()}`,
+      `Target/Stop: ${targetPrice ? ('$' + Number(targetPrice).toLocaleString()) : '(not provided)'}`,
+      '',
+      'Reasoning:',
+      reasoning,
+      '',
+      `Submitted: ${new Date(decision.timestamp).toLocaleString()}`
+    ];
+
+    const resultBox = document.getElementById('submissionResult');
+    const summaryBox = document.getElementById('submissionSummary');
+
+    if (!resultBox || !summaryBox) {
+      alert('Saved, but summary box is missing. Please refresh and try again.');
+      return;
+    }
+
+    summaryBox.textContent = summaryLines.join('\n');
+    resultBox.style.display = 'block';
+    resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function copySummary() {
+    const text = document.getElementById('submissionSummary')?.textContent || '';
+    if (!text) return;
+
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => alert('✅ Copied! Paste into Blackboard if you prefer text submission.'))
+        .catch(() => alert('Copy failed — please screenshot the summary instead.'));
+    } else {
+      alert('Clipboard not available — please screenshot the summary.');
+    }
+  }
+
+  function downloadReceipt() {
+    const text = document.getElementById('submissionSummary')?.textContent || '';
+    if (!text) return;
+
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'bitcoin_simulation_submission.txt';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+    </script>
+</body>
+</html>
