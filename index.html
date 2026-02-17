@@ -531,85 +531,86 @@
     </div>
 
     <script>
-        function submitDecision() {
-            const positionType = document.getElementById('positionType').value;
-            const entryPrice = document.getElementById('entryPrice').value;
-            const positionSize = document.getElementById('positionSize').value;
-            const reasoning = document.getElementById('reasoning').value;
-            const targetPrice = document.getElementById('targetPrice').value;
+     <script>
+  function submitDecision() {
+    const positionType = document.getElementById('positionType')?.value || '';
+    const entryPrice = document.getElementById('entryPrice')?.value || '';
+    const positionSize = document.getElementById('positionSize')?.value || '';
+    const reasoning = document.getElementById('reasoning')?.value || '';
+    const targetPrice = document.getElementById('targetPrice')?.value || '';
 
-            if (!positionType || !entryPrice || !positionSize || !reasoning) {
-                alert('Please fill in all required fields!');
-                return;
-            }
+    if (!positionType || !entryPrice || !positionSize || !reasoning) {
+      alert('Please fill in all required fields!');
+      return;
+    }
 
-            const decision = {
-                positionType,
-                entryPrice,
-                positionSize,
-                targetPrice,
-                reasoning,
-                timestamp: new Date().toISOString()
-            };
+    const decision = {
+      positionType,
+      entryPrice,
+      positionSize,
+      targetPrice,
+      reasoning,
+      timestamp: new Date().toISOString()
+    };
 
-            // Save locally (student device)
-            localStorage.setItem('nov2021_decision', JSON.stringify(decision));
+    localStorage.setItem('nov2021_decision', JSON.stringify(decision));
 
-            // Build an on-page summary students can screenshot
-            const summaryLines = [
-                'Bitcoin Trading Simulation — November 2021',
-                '-----------------------------------------',
-                `Position: ${positionType.toUpperCase()}`,
-                `Entry price: $${Number(entryPrice).toLocaleString()}`,
-                `Position size: $${Number(positionSize).toLocaleString()}`,
-                `Target/Stop: ${targetPrice ? ('$' + Number(targetPrice).toLocaleString()) : '(not provided)'}`,
-                '',
-                'Reasoning:',
-                reasoning,
-                '',
-                `Submitted: ${new Date(decision.timestamp).toLocaleString()}`
-            ];
+    const summaryLines = [
+      'Bitcoin Trading Simulation — November 2021',
+      '-----------------------------------------',
+      `Position: ${String(positionType).toUpperCase()}`,
+      `Entry price: $${Number(entryPrice).toLocaleString()}`,
+      `Position size: $${Number(positionSize).toLocaleString()}`,
+      `Target/Stop: ${targetPrice ? ('$' + Number(targetPrice).toLocaleString()) : '(not provided)'}`,
+      '',
+      'Reasoning:',
+      reasoning,
+      '',
+      `Submitted: ${new Date(decision.timestamp).toLocaleString()}`
+    ];
 
-            const resultBox = document.getElementById('submissionResult');
-            const summaryBox = document.getElementById('submissionSummary');
-            summaryBox.textContent = summaryLines.join('
-');
-            resultBox.style.display = 'block';
+    const resultBox = document.getElementById('submissionResult');
+    const summaryBox = document.getElementById('submissionSummary');
 
-            // Scroll into view for easy screenshot
-            resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+    if (!resultBox || !summaryBox) {
+      alert('Saved, but summary box is missing. Please refresh and try again.');
+      return;
+    }
 
-        // Copy / download helpers
-        function copySummary() {
-            const text = document.getElementById('submissionSummary')?.textContent || '';
-            if (!text) return;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert('✅ Copied! Paste into Blackboard if you prefer text submission.');
-                }).catch(() => {
-                    alert('Copy failed — you can still screenshot the summary.');
-                });
-            } else {
-                alert('Clipboard not available — please screenshot the summary.');
-            }
-        }
+    summaryBox.textContent = summaryLines.join('\n');
+    resultBox.style.display = 'block';
+    resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
-        function downloadReceipt() {
-            const text = document.getElementById('submissionSummary')?.textContent || '';
-            if (!text) return;
-            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'bitcoin_simulation_submission.txt';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-        }
+  function copySummary() {
+    const text = document.getElementById('submissionSummary')?.textContent || '';
+    if (!text) return;
 
-        // (Password reveal removed — instructor shares reveal link during debrief)
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => alert('✅ Copied! Paste into Blackboard if you prefer text submission.'))
+        .catch(() => alert('Copy failed — please screenshot the summary instead.'));
+    } else {
+      alert('Clipboard not available — please screenshot the summary.');
+    }
+  }
+
+  function downloadReceipt() {
+    const text = document.getElementById('submissionSummary')?.textContent || '';
+    if (!text) return;
+
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'bitcoin_simulation_submission.txt';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+</script>
+
     </script>
 </body>
 </html>
