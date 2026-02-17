@@ -505,17 +505,28 @@
                 </div>
             </div>
 
-            <button class="submit-btn" onclick="submitDecision()">
-                📋 SUBMIT DECISION TO INSTRUCTOR
-            </button>
+            <button class="submit-btn" onclick="submitDecision()">📋 SUBMIT DECISION (GENERATE SUMMARY)</button>
+
+            <!-- Submission result (students screenshot this) -->
+            <div id="submissionResult" style="display:none; margin-top: 20px; background: rgba(0,0,0,0.18); border: 2px solid rgba(255,255,255,0.35); padding: 18px; border-radius: 12px;">
+                <h3 style="margin-bottom: 10px;">✅ Submission Summary (Screenshot this)</h3>
+                <div id="submissionSummary" style="white-space: pre-wrap; line-height: 1.5;"></div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+                    <button type="button" class="reveal-btn" style="background:#1da1f2;" onclick="copySummary()">COPY SUMMARY</button>
+                    <button type="button" class="reveal-btn" style="background:#4a5568;" onclick="downloadReceipt()">DOWNLOAD RECEIPT (.txt)</button>
+                </div>
+                <p style="margin-top:12px; color:#f0f0f0; font-size:0.95em;">
+                    Upload the screenshot (or the downloaded receipt) to Blackboard.
+                </p>
+            </div>
         </div>
 
         <!-- Password Protected Reveal Section -->
+        <!-- Reveal section (class-controlled) -->
         <div class="password-section">
-            <h2 style="color: #e74c3c; margin-bottom: 20px;">🔐 WANT TO SEE WHAT HAPPENED?</h2>
-            <p style="margin-bottom: 20px; font-size: 1.1em;">Enter the code provided by your instructor:</p>
-            <input type="password" id="revealPassword" class="password-input" placeholder="Enter code...">
-            <button class="reveal-btn" onclick="checkPassword()">REVEAL RESULTS</button>
+            <h2 style="color: #e74c3c; margin-bottom: 20px;">🔐 REVEAL</h2>
+            <p style="margin-bottom: 10px; font-size: 1.1em;">Your instructor will share the reveal link during the debrief.</p>
+            <p style="color:#ccc;">(We don’t use an on-page password because it’s easy to find in page source.)</p>
         </div>
     </div>
 
@@ -541,20 +552,64 @@
                 timestamp: new Date().toISOString()
             };
 
+            // Save locally (student device)
             localStorage.setItem('nov2021_decision', JSON.stringify(decision));
 
-            alert('✅ Decision submitted! Share your reasoning with your partner and create your Post-it note.\n\nWait for instructor code to see what actually happened!');
+            // Build an on-page summary students can screenshot
+            const summaryLines = [
+                'Bitcoin Trading Simulation — November 2021',
+                '-----------------------------------------',
+                `Position: ${positionType.toUpperCase()}`,
+                `Entry price: $${Number(entryPrice).toLocaleString()}`,
+                `Position size: $${Number(positionSize).toLocaleString()}`,
+                `Target/Stop: ${targetPrice ? ('$' + Number(targetPrice).toLocaleString()) : '(not provided)'}`,
+                '',
+                'Reasoning:',
+                reasoning,
+                '',
+                `Submitted: ${new Date(decision.timestamp).toLocaleString()}`
+            ];
+
+            const resultBox = document.getElementById('submissionResult');
+            const summaryBox = document.getElementById('submissionSummary');
+            summaryBox.textContent = summaryLines.join('
+');
+            resultBox.style.display = 'block';
+
+            // Scroll into view for easy screenshot
+            resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        function checkPassword() {
-            const password = document.getElementById('revealPassword').value;
-            if (password === 'tothemoon' || password === 'TOTHEMOON' || password === 'ToTheMoon') {
-                window.open('about:blank', '_blank');
-                alert('✅ Correct! Opening reveal page in new tab...\n\nNote: The reveal page should be provided separately by your instructor.');
+        // Copy / download helpers
+        function copySummary() {
+            const text = document.getElementById('submissionSummary')?.textContent || '';
+            if (!text) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('✅ Copied! Paste into Blackboard if you prefer text submission.');
+                }).catch(() => {
+                    alert('Copy failed — you can still screenshot the summary.');
+                });
             } else {
-                alert('❌ Incorrect code. Ask your instructor for the reveal code.');
+                alert('Clipboard not available — please screenshot the summary.');
             }
         }
+
+        function downloadReceipt() {
+            const text = document.getElementById('submissionSummary')?.textContent || '';
+            if (!text) return;
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'bitcoin_simulation_submission.txt';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        // (Password reveal removed — instructor shares reveal link during debrief)
     </script>
 </body>
 </html>
